@@ -1,0 +1,53 @@
+settings:
+  config:
+    workers: 10   # number of workers during execution
+    rps: 2    # request per second during execution
+    duration: 3s   # execution duration
+    output: /tmp/results.json   # results output file
+    verbose: true   # debug workers during execution
+  auth:
+    sql:
+      host: localhost
+      port: 5432
+      database: etzba
+      user: etzba
+      password: Pass1234      
+
+scenarios:
+  locations:
+    sql:    # list of sql queries
+    - command: SELECT
+      table: locations
+      constraint: "longtitude BETWEEN 13.0 AND 15.0"
+      tags: ["select","long"]
+    - command: UPDATE
+      table: locations
+      constraint: "longtitude BETWEEN 13.0 AND 15.0 AND latitude BETWEEN 13.0 AND 15.0"
+      values: 
+        latitude: 14.232134112
+    - command: INSERT
+      table: locations
+      values: 
+        name: "someplace"
+        address: "better street 32" 
+        longtitude: 89.123123123
+        latitude: -98.1234123123
+      tags: ["insert","loc"]
+    - command: DELETE
+      table: locations
+      constraint: "name='someplace'"
+      tags: ["del"]
+  {{ if .locations }}  
+  fromValues:
+    sql:
+    {{ range .locations }}
+    - command: INSERT
+      table: locations
+      values:
+        name: {{ .name }}
+        address: {{ .address }}
+        longtitude: {{ .longtitude }}
+        latitude: {{ .latitude }}
+      tags: ["values"]
+    {{ end }}
+  {{ end }}

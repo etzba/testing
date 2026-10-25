@@ -1,0 +1,47 @@
+{{ $path := printf "%s" "examples/pgsql/" }}
+{{ $strings := makeStrSlice "Etz" "Ba" "Etzba" "Agudal" "Amma" "Kmiza" "Zeret" }}
+
+sql:    # list of sql queries
+- command: SELECT
+  table: locations
+  constraint: "longtitude BETWEEN 13.0 AND 15.0"
+- command: UPDATE
+  table: locations
+  constraint: "longtitude BETWEEN 13.0 AND 15.0 AND latitude BETWEEN 13.0 AND 15.0"
+  values: 
+    latitude: {{ getFloatInRange 25 35 }}
+  tags: ["locations"]
+{{ range $strings }}
+- command: INSERT
+  table: locations
+  values: 
+    name: {{ . }}
+    address: {{ getRandStringInLength 21 }}
+    longtitude: {{ getFloatInRange 45 65 }}
+    latitude: {{ getFloatInRange -100 -80 }}
+  tags: ["locations"]
+{{ end }}
+- command: INSERT
+  table: locations
+  values: 
+    name: {{ getRandStringInLength 5 }}
+    address: {{ getRandStringInLength 23 }}
+    longtitude: {{ getFloatInRange 21 35 }}
+    latitude: {{ getFloatInRange -80 10 }}
+- command: DELETE
+  table: locations
+  constraint: "name='someplace'"
+  tags: ["delete"]
+- query: "UPDATE locations SET longtitude = {{ getFloatInRange 65 80 }} WHERE name = 'Etz';"
+- query: "UPDATE locations SET longtitude = {{ getFloatInRange 80 90 }} WHERE name = 'Amma';"
+- query: "UPDATE locations SET longtitude = {{ getFloatInRange 80 90 }} WHERE name = 'Kmiza';"
+  tags: ["upadte", "query"]
+{{ range .locations }}
+- command: INSERT
+  table: locations
+  values:
+    name: {{ .name }}
+    address: {{ .address }}
+    longtitude: {{ .longtitude }}
+    latitude: {{ .latitude }}
+{{ end }}   
