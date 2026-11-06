@@ -1,9 +1,10 @@
 {{ $gopu := printf "%s" "http://localhost:8080" }}
 {{ $placeSlice := makeAnySlice "Great Pyramid at Giza" "Statue of Liberty" "Eiffel Tower" "Ayers Rock (Uluru)" "Mt. Kilimanjaro" "Taj Mahal" "Golden Gate Bridge" "Machu Picchu" "Brandenburg Gate" "CN Tower" }}
-{{ $intSlice := makeIntSlice 1 2 3 4 }}
-{{ $sumSlice := makeIntSliceBySum 100 }}
 {{ $filesPath := printf "%s" "files/" }}
 {{ $resultsPath := printf "%s" "results" }}
+{{ $easySlice := makeIntSliceBySum 1000 }}
+{{ $mediumSlice := makeIntSliceBySum 10000 }}
+{{ $hardSlice := makeIntSliceBySum 100000 }}
 
 scenarios:
   easyDist:
@@ -19,9 +20,9 @@ scenarios:
       data: 
         formula: "pythagoras"
         fromPlace: {{ . }}
-        longtitude: {{ getFloatInRange 21 90 }}
+        longitude: {{ getFloatInRange 21 90 }}
         latitude: {{ getFloatInRange -80 10 }}
-      tags: ["post","pytha"]
+      tags: [ "post", "pytha", "easyDist" ]
     {{ end }}
   mediumDist:
     config:
@@ -36,9 +37,9 @@ scenarios:
       data: 
         formula: "pythagoras"
         fromPlace: {{ . }}
-        longtitude: {{ getFloatInRange 21 90 }}
+        longitude: {{ getFloatInRange 21 90 }}
         latitude: {{ getFloatInRange -80 10 }}
-      tags: ["post","pytha"]
+      tags: [ "post", "pytha", "mediumDist" ]
     {{ end }}
   hardDist:
     config:
@@ -53,18 +54,18 @@ scenarios:
       data: 
         formula: "pythagoras"
         fromPlace: {{ . }}
-        longtitude: {{ getFloatInRange 21 90 }}
+        longitude: {{ getFloatInRange 21 90 }}
         latitude: {{ getFloatInRange -80 10 }}
-      tags: ["post","pytha"]
+      tags: [ "post", "pytha", "hardDist" ]
     {{ end }}
   easyCalc:
     config:
       workers: 10
       rps: 50
-      duration: 3s
+      duration: 120s
       output: {{ $resultsPath }}/easyCalc.json
     api:
-    {{ range $sumSlice }}
+    {{ range $easySlice }}
       {{ $firstInt := getFloatInRange 5 10 }}
       {{ $secondInt := getFloatInRange 20 40 }}
       {{ $firstFloat := getFloatInRange 2 4 }}
@@ -72,7 +73,7 @@ scenarios:
     - url: {{ $gopu }}/plus
       method: POST
       payload: '[{{$firstFloat}},{{$secondFloat}}]'
-      tags: ["post","plus"]
+      tags: [ "post", "plus", "easyPlus" ]
     - url: {{ $gopu }}/minus
       method: POST
       payload: '[{{$firstFloat}},{{$secondInt}}]'
@@ -82,16 +83,16 @@ scenarios:
     - url: {{ $gopu }}/divide
       method: POST
       payload: '[{{$firstFloat}},{{$secondInt}}]'
-      tags: ["post","div"]
+      tags: [ "post", "div", "easyDiv" ]
     {{ end }}
   mediumCalc:
     config:
       workers: 50
       rps: 200
-      duration: 10s
+      duration: 120s
       output: {{ $resultsPath }}/mediumCalc.json
     api:
-    {{ range $sumSlice }}
+    {{ range $mediumSlice }}
       {{ $firstInt := getFloatInRange 5 10 }}
       {{ $secondInt := getFloatInRange 20 40 }}
       {{ $firstFloat := getFloatInRange 2 4 }}
@@ -99,7 +100,7 @@ scenarios:
     - url: {{ $gopu }}/plus
       method: POST
       payload: '[{{$firstFloat}},{{$secondFloat}}]'
-      tags: ["plus"]
+      tags: [ "plus", "mediumPlus"]
     - url: {{ $gopu }}/minus
       method: POST
       payload: '[{{$firstFloat}},{{$secondInt}}]'
@@ -110,15 +111,16 @@ scenarios:
     - url: {{ $gopu }}/divide
       method: POST
       payload: '[{{$firstFloat}},{{$secondInt}}]'
+      tags: [ "post", "div", "mediumDiv" ]
     {{ end }}
   hardCalc:
     config:
       workers: 100
       rps: 500
-      duration: 5s
+      duration: 120s
       output: {{ $resultsPath }}/hardCalc.json
     api:
-    {{ range $sumSlice }}
+    {{ range $hardSlice }}
       {{ $firstInt := getFloatInRange 5 10 }}
       {{ $secondInt := getFloatInRange 20 40 }}
       {{ $firstFloat := getFloatInRange 2 4 }}
@@ -142,7 +144,7 @@ scenarios:
     config:
       workers: 10
       rps: 30
-      duration: 8s
+      duration: 12s
       output: {{ $resultsPath }}/easyFile.json 
     file:
     - url: {{ $gopu }}/pics
@@ -155,7 +157,7 @@ scenarios:
     config:
       workers: 15
       rps: 45
-      duration: 10s
+      duration: 12s
       output: {{ $resultsPath }}/mediumFile.json 
     file:
     - url: {{ $gopu }}/pics
@@ -168,7 +170,7 @@ scenarios:
     config:
       workers: 30
       rps: 90
-      duration: 3s
+      duration: 12s
       output: {{ $resultsPath }}/hardFile.json 
     file:
     - url: {{ $gopu }}/pics
@@ -181,71 +183,196 @@ scenarios:
     config:
       workers: 10
       rps: 40
-      duration: 12s
+      duration: 120s
       output: {{ $resultsPath }}/easyLoc.json
     api:
-    {{ range $intSlice }}
+    {{ range $easySlice }}
     - url: {{ $gopu }}/locations/{{ . }}
       method: GET
-    {{ end }}
     - url: {{ $gopu }}/locations
       method: GET
-    {{ range $intSlice }}
     - url: {{ $gopu }}/locations
       method: POST
       data: 
-        name: {{ getRandStringInLength 5 }}
-        address: {{ getRandStringInLength 23 }}
-        longtitude: {{ getFloatInRange 21 90 }}
-        latitude: {{ getFloatInRange -80 10 }}
-    {{ end }}
+        name: {{ getRandStringInLength 6 }}
+        address: {{ getRandStringInLength 24 }}
+        longitude: {{ getFloatInRange 40 80 }}
+        latitude: {{ getFloatInRange -80 -40 }}
+      tags: ["postloc"]
     - url: {{ $gopu }}/locations
       method: POST
-      payload: '{ "name": "Etz", "address": "Ba Etzba etz",  "longtitude": 54.4334523123, "latitude": 54.321312234 }'
+      payload: '{ "name": "{{ getRandStringInLength 10 }}", "address": "{{ getRandStringInLength 40 }}",  "longitude": {{ getFloatInRange 10 30 }}, "latitude": {{ getFloatInRange 20 40 }} }'
+      tags: ["post","locations", "payload"]
+    {{ end }}
   mediumLoc:  
     config:
       workers: 50
       rps: 200
-      duration: 8s
+      duration: 120s
       output: {{ $resultsPath }}/mediumLoc.json
     api:
-    {{ range $intSlice }}
+    {{ range $mediumSlice }}
     - url: {{ $gopu }}/locations/{{ . }}
       method: GET
-    {{ end }}
     - url: {{ $gopu }}/locations
       method: GET
-    {{ range $intSlice }}
     - url: {{ $gopu }}/locations
       method: POST
       data: 
-        name: {{ getRandStringInLength 5 }}
-        address: {{ getRandStringInLength 23 }}
-        longtitude: {{ getFloatInRange 21 90 }}
-        latitude: {{ getFloatInRange -80 10 }}
-    {{ end }}
+        name: {{ getRandStringInLength 6 }}
+        address: {{ getRandStringInLength 24 }}
+        longitude: {{ getFloatInRange 40 80 }}
+        latitude: {{ getFloatInRange -80 -40 }}
+      tags: ["postloc"]
     - url: {{ $gopu }}/locations
       method: POST
-      payload: '{ "name": "Etz", "address": "Ba Etzba etz",  "longtitude": 54.4334523123, "latitude": 54.321312234 }'
+      payload: '{ "name": "{{ getRandStringInLength 10 }}", "address": "{{ getRandStringInLength 40 }}",  "longitude": {{ getFloatInRange 10 30 }}, "latitude": {{ getFloatInRange 20 40 }} }'
+      tags: ["post","locations", "payload"]
+    {{ end }}
   hardLoc:  
     config:
       workers: 100
       rps: 500
-      duration: 3s
+      duration: 120s
       output: {{ $resultsPath }}/hardLoc.json
     api:
-    {{ range $intSlice }}
+    {{ range $hardSlice }}
     - url: {{ $gopu }}/locations/{{ . }}
       method: GET
-    {{ end }}
     - url: {{ $gopu }}/locations
       method: GET
-    {{ range $intSlice }}
     - url: {{ $gopu }}/locations
       method: POST
       data: 
-        name: {{ getRandStringInLength 5 }}
-        address: {{ getRandStringInLength 23 }}
-        longtitude: {{ getFloatInRange 21 90 }}
-        latitude: {{ getFloatInRange -80 10 }}
+        name: {{ getRandStringInLength 6 }}
+        address: {{ getRandStringInLength 24 }}
+        longitude: {{ getFloatInRange 40 80 }}
+        latitude: {{ getFloatInRange -80 -40 }}
+      tags: ["postloc"]
+    - url: {{ $gopu }}/locations
+      method: POST
+      payload: '{ "name": "{{ getRandStringInLength 10 }}", "address": "{{ getRandStringInLength 40 }}",  "longitude": {{ getFloatInRange 10 30 }}, "latitude": {{ getFloatInRange 20 40 }} }'
+      tags: ["post","locations", "payload", "hardLoc"]
     {{ end }}
+
+checks:
+  easyDist:
+    statusCode:
+      200:
+        greaterThan: 200
+      404:
+        lessThan: 2
+    taskDurations:
+      minimum:
+        fasterThan: 1.1ms
+        slowerThan: 0.05ms
+      average:
+        fasterThan: 2.21234ms
+        slowerThan: 1.21ms
+      maximum:
+        fasterThan: 21.21234ms
+        slowerThan: 13.212355ms
+    tasksCount:
+      total:
+        greaterThan: 200
+        lessThan: 180
+  mediumDist:
+    statusCode:
+      200:
+        greaterThan: 2000
+      404:
+        lessThan: 20
+    taskDurations:
+      minimum:
+        fasterThan: 1.21ms
+        slowerThan: 0.0052ms
+      average:
+        fasterThan: 2.21234ms
+        slowerThan: 1.21ms
+      maximum:
+        fasterThan: 21.21234ms
+        slowerThan: 13.212355ms
+    tasksCount:
+      total:
+        greaterThan: 2000
+        lessThan: 1800
+  hardDist:
+    statusCode:
+      200:
+        greaterThan: 20000
+      404:
+        lessThan: 50
+    taskDurations:
+      minimum:
+        fasterThan: 1.21ms
+        slowerThan: 0.0052ms
+      average:
+        fasterThan: 2.21234ms
+        slowerThan: 1.21ms
+      maximum:
+        fasterThan: 21.21234ms
+        slowerThan: 13.212355ms
+    tasksCount:
+      total:
+        greaterThan: 20000
+        lessThan: 18000
+  easyLoc:
+    statusCode:
+      200:
+        greaterThan: 4000
+      404:
+        lessThan: 10
+    taskDurations:
+      minimum:
+        fasterThan: 1.21ms
+        slowerThan: 0.0052ms
+      average:
+        fasterThan: 2.21234ms
+        slowerThan: 1.21ms
+      maximum:
+        fasterThan: 21.21234ms
+        slowerThan: 13.212355ms
+    tasksCount:
+      total:
+        greaterThan: 4850
+        lessThan: 4200
+  mediumLoc:
+    statusCode:
+      200:
+        greaterThan: 40000
+      404:
+        lessThan: 20
+    taskDurations:
+      minimum:
+        fasterThan: 1.21ms
+        slowerThan: 0.0052ms
+      average:
+        fasterThan: 2.21234ms
+        slowerThan: 1.21ms
+      maximum:
+        fasterThan: 21.21234ms
+        slowerThan: 13.212355ms
+    tasksCount:
+      total:
+        greaterThan: 48500
+        lessThan: 42000
+  hardLoc:
+    statusCode:
+      200:
+        lessThan: 420000
+      404:
+        greaterThan: 200
+    taskDurations:
+      minimum:
+        fasterThan: 1.21ms
+        slowerThan: 0.0052ms
+      average:
+        fasterThan: 2.21234ms
+        slowerThan: 1.21ms
+      maximum:
+        fasterThan: 21.21234ms
+        slowerThan: 13.212355ms
+    tasksCount:
+      total:
+        greaterThan: 485000
+        lessThan: 420000

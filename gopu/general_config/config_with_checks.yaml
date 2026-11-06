@@ -1,0 +1,263 @@
+{{ $gopu := printf "%s" "http://localhost:8080" }}
+{{ $placeSlice := makeAnySlice "Great Pyramid at Giza" "Statue of Liberty" "Eiffel Tower" "Ayers Rock (Uluru)" "Mt. Kilimanjaro" "Taj Mahal" "Golden Gate Bridge" "Machu Picchu" "Brandenburg Gate" "CN Tower" }}
+{{ $filesPath := printf "%s" "files/" }}
+{{ $resultsPath := printf "%s" "results" }}
+{{ $easySlice := makeIntSliceBySum 1000 }}
+{{ $mediumSlice := makeIntSliceBySum 10000 }}
+{{ $hardSlice := makeIntSliceBySum 100000 }}
+
+scenarios:
+  easyDist:
+    config:
+      workers: 10
+      rps: 40
+      duration: 5s
+      output: {{ $resultsPath }}/easyDist.json"
+    api:
+    {{ range $placeSlice }}
+    - url: {{ $gopu }}/distance
+      method: POST
+      data: 
+        formula: "pythagoras"
+        fromPlace: {{ . }}
+        longitude: {{ getFloatInRange 21 90 }}
+        latitude: {{ getFloatInRange -80 10 }}
+      tags: [ "post", "pytha", "easyDist" ]
+    {{ end }}
+  mediumDist:
+    config:
+      workers: 30
+      rps: 120
+      duration: 5s
+      output: {{ $resultsPath }}/mediumDist.json
+    api:      
+    {{ range $placeSlice }}
+    - url: {{ $gopu }}/distance
+      method: POST
+      data: 
+        formula: "pythagoras"
+        fromPlace: {{ . }}
+        longitude: {{ getFloatInRange 21 90 }}
+        latitude: {{ getFloatInRange -80 10 }}
+      tags: [ "post", "pytha", "mediumDist" ]
+    {{ end }}
+  hardDist:
+    config:
+      workers: 50
+      rps: 200
+      duration: 5s
+      output: {{ $resultsPath }}/hardDist.json
+    api:      
+    {{ range $placeSlice }}
+    - url: {{ $gopu }}/distance
+      method: POST
+      data: 
+        formula: "pythagoras"
+        fromPlace: {{ . }}
+        longitude: {{ getFloatInRange 21 90 }}
+        latitude: {{ getFloatInRange -80 10 }}
+      tags: [ "post", "pytha", "hardDist" ]
+    {{ end }}
+  easyLoc:  
+    config:
+      workers: 10
+      rps: 40
+      duration: 120s
+      output: {{ $resultsPath }}/easyLoc.json
+    api:
+    {{ range $easySlice }}
+    - url: {{ $gopu }}/locations/{{ . }}
+      method: GET
+      tags: [ "easyLoc" ]
+    - url: {{ $gopu }}/locations
+      method: GET
+      tags: [ "easyLoc" ]
+    - url: {{ $gopu }}/locations
+      method: POST
+      data: 
+        name: {{ getRandStringInLength 6 }}
+        address: {{ getRandStringInLength 24 }}
+        longitude: {{ getFloatInRange 40 80 }}
+        latitude: {{ getFloatInRange -80 -40 }}
+      tags: [ "easyLoc" ]
+    - url: {{ $gopu }}/locations
+      method: POST
+      payload: '{ "name": "{{ getRandStringInLength 10 }}", "address": "{{ getRandStringInLength 40 }}",  "longitude": {{ getFloatInRange 10 30 }}, "latitude": {{ getFloatInRange 20 40 }} }'
+      tags: [ "post", "locations", "payload", "easyLoc" ]
+    {{ end }}
+  mediumLoc:  
+    config:
+      workers: 50
+      rps: 200
+      duration: 120s
+      output: {{ $resultsPath }}/mediumLoc.json
+    api:
+    {{ range $mediumSlice }}
+    - url: {{ $gopu }}/locations/{{ . }}
+      method: GET
+      tags: ["mediumLoc"]
+    - url: {{ $gopu }}/locations
+      method: GET
+      tags: ["mediumLoc"]
+    - url: {{ $gopu }}/locations
+      method: POST
+      data: 
+        name: {{ getRandStringInLength 6 }}
+        address: {{ getRandStringInLength 24 }}
+        longitude: {{ getFloatInRange 40 80 }}
+        latitude: {{ getFloatInRange -80 -40 }}
+      tags: ["mediumLoc"]
+    - url: {{ $gopu }}/locations
+      method: POST
+      payload: '{ "name": "{{ getRandStringInLength 10 }}", "address": "{{ getRandStringInLength 40 }}",  "longitude": {{ getFloatInRange 10 30 }}, "latitude": {{ getFloatInRange 20 40 }} }'
+      tags: [ "post", "locations", "payload", "mediumLoc"]
+    {{ end }}
+  hardLoc:  
+    config:
+      workers: 100
+      rps: 500
+      duration: 120s
+      output: {{ $resultsPath }}/hardLoc.json
+    api:
+    {{ range $hardSlice }}
+    - url: {{ $gopu }}/locations/{{ . }}
+      method: GET
+      tags: ["hardLoc"]
+    - url: {{ $gopu }}/locations
+      method: GET
+      tags: ["hardLoc"]
+    - url: {{ $gopu }}/locations
+      method: POST
+      data: 
+        name: {{ getRandStringInLength 6 }}
+        address: {{ getRandStringInLength 24 }}
+        longitude: {{ getFloatInRange 40 80 }}
+        latitude: {{ getFloatInRange -80 -40 }}
+      tags: ["hardLoc"]
+    - url: {{ $gopu }}/locations
+      method: POST
+      payload: '{ "name": "{{ getRandStringInLength 10 }}", "address": "{{ getRandStringInLength 40 }}",  "longitude": {{ getFloatInRange 10 30 }}, "latitude": {{ getFloatInRange 20 40 }} }'
+      tags: ["post","locations", "payload", "hardLoc"]
+    {{ end }}
+
+checks:
+  easyDist:
+    statusCode:
+      200:
+        lessThan: 220
+        greaterThan: 180
+    taskDurations:
+      minimum:
+        fasterThan: 1.1ms
+        slowerThan: 0.05ms
+      average:
+        fasterThan: 2.21234ms
+        slowerThan: 1.21ms
+      maximum:
+        fasterThan: 21.21234ms
+        slowerThan: 13.212355ms
+    tasksCount:
+      total:
+        lessThan: 220
+        greaterThan: 180
+  mediumDist:
+    statusCode:
+      200:
+        lessThan: 650
+        greaterThan: 550
+    taskDurations:
+      minimum:
+        fasterThan: 1.21ms
+        slowerThan: 0.0052ms
+      average:
+        fasterThan: 2.21234ms
+        slowerThan: 1.21ms
+      maximum:
+        fasterThan: 21.21234ms
+        slowerThan: 13.212355ms
+    tasksCount:
+      total:
+        lessThan: 650
+        greaterThan: 550
+  hardDist:
+    statusCode:
+      200:
+        lessThan: 1050
+        greaterThan: 950
+      404:
+        lessThan: 20
+    taskDurations:
+      minimum:
+        fasterThan: 1.21ms
+        slowerThan: 0.0052ms
+      average:
+        fasterThan: 2.21234ms
+        slowerThan: 1.21ms
+      maximum:
+        fasterThan: 21.21234ms
+        slowerThan: 13.212355ms
+    tasksCount:
+      total:
+        lessThan: 1050
+        greaterThan: 950
+  easyLoc:
+    statusCode:
+      200:
+        greaterThan: 1100
+        lessThan: 1200
+    taskDurations:
+      minimum:
+        fasterThan: 1.21ms
+        slowerThan: 0.0052ms
+      average:
+        fasterThan: 2.21234ms
+        slowerThan: 1.21ms
+      maximum:
+        fasterThan: 21.21234ms
+        slowerThan: 13.212355ms
+    tasksCount:
+      total:
+        greaterThan: 1200
+        lessThan: 1100
+  mediumLoc:
+    statusCode:
+      200:
+        greaterThan: 5950
+        lessThan: 6050
+      404:
+        lessThan: 20
+    taskDurations:
+      minimum:
+        fasterThan: 1.21ms
+        slowerThan: 0.0052ms
+      average:
+        fasterThan: 2.21234ms
+        slowerThan: 1.21ms
+      maximum:
+        fasterThan: 21.21234ms
+        slowerThan: 13.212355ms
+    tasksCount:
+      total:
+        greaterThan: 5950
+        lessThan: 6050
+  hardLoc:
+    statusCode:
+      200:
+        greaterThan: 14000
+        lessThan: 15000
+      404:
+        lessThan: 200
+    taskDurations:
+      minimum:
+        fasterThan: 1.21ms
+        slowerThan: 0.0052ms
+      average:
+        fasterThan: 2.21234ms
+        slowerThan: 1.21ms
+      maximum:
+        fasterThan: 21.21234ms
+        slowerThan: 13.212355ms
+    tasksCount:
+      total:
+        greaterThan: 14000
+        lessThan: 15000

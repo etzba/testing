@@ -21,3 +21,24 @@ api:
   payload: '[{{$firstFloat}},{{$secondInt}}]'
   tags: ["calc", "div"]
 {{ end }}
+
+checks:
+  calc:
+    statusCode:
+      200:
+        greaterThan: 55
+        lessThan: 60
+    taskDurations:
+      minimum:
+        fasterThan: 1.21ms
+        slowerThan: 0.0052ms
+      average:
+        fasterThan: 2.21234ms
+        slowerThan: 1.21ms
+      maximum:
+        fasterThan: 21.21234ms
+        slowerThan: 13.212355ms
+    tasksCount:
+      total:
+        greaterThan: 55
+        lessThan: 60
