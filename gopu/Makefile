@@ -1,4 +1,4 @@
-TAG ?= v0.1.0
+TAG ?= v0.1.1
 REPO ?= etzba/gopu
 
 all: base up test down
@@ -23,6 +23,7 @@ test:
 	etz file --workers=3 --exec=executions/calc.yaml --values=values.yaml
 	etz file --url=http://localhost:8080/docs --method=PUT --path=files/ -w=6 -r=6
 	etz file --exec=executions/file.yaml -d=3s -w=1 -r=1
+	etz --config=general_config/config_with_checks.yaml
 	etz --config=general_config/config.yaml
 	
 .PHONY: down
@@ -35,4 +36,4 @@ cleanup:
 
 .PHONY: run
 run:
-	docker run -t --rm ${REPO}:${TAG}
+	docker run -p 127.0.0.1:8080:8080/tcp -t --rm ${REPO}:${TAG}

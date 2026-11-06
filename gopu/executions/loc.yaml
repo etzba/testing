@@ -1,24 +1,43 @@
 {{ $baseUrl := printf "%s" "http://localhost:8080" }}
-{{ $slice := makeIntSlice 1 2 3 4 5 6 7 8 9 10 }}
+{{ $slice := makeIntSliceBySum 1000 }}
 
 api:
 {{ range $slice }}
 - url: {{ $baseUrl }}/locations/{{ . }}
   method: GET
-{{ end }}
 - url: {{ $baseUrl }}/locations
   method: GET
-{{ range $slice }}
 - url: {{ $baseUrl }}/locations
   method: POST
   data: 
-    name: {{ getRandStringInLength 5 }}
-    address: {{ getRandStringInLength 23 }}
-    longtitude: {{ getFloatInRange 21 90 }}
-    latitude: {{ getFloatInRange -80 10 }}
+    name: {{ getRandStringInLength 6 }}
+    address: {{ getRandStringInLength 24 }}
+    longitude: {{ getFloatInRange 40 80 }}
+    latitude: {{ getFloatInRange -80 -40 }}
   tags: ["postloc"]
-{{ end }}
 - url: {{ $baseUrl }}/locations
   method: POST
-  payload: '{ "name": "Etz", "address": "Ba Etzba etz",  "longtitude": 54.4334523123, "latitude": 54.321312234 }'
+  payload: '{ "name": "{{ getRandStringInLength 10 }}", "address": "{{ getRandStringInLength 40 }}",  "longitude": {{ getFloatInRange 10 30 }}, "latitude": {{ getFloatInRange 20 40 }} }'
   tags: ["post","locations", "payload"]
+{{ end }}
+
+checks:
+  postloc:
+    statusCode:
+      200:
+        greaterThan: 55
+        lessThan: 60
+    taskDurations:
+      minimum:
+        fasterThan: 1.21ms
+        slowerThan: 0.0052ms
+      average:
+        fasterThan: 2.21234ms
+        slowerThan: 1.21ms
+      maximum:
+        fasterThan: 21.21234ms
+        slowerThan: 13.212355ms
+    tasksCount:
+      total:
+        greaterThan: 55
+        lessThan: 60
